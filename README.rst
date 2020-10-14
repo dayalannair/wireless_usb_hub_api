@@ -25,8 +25,7 @@ API for using Pi as a wireless USB hub.
 
 Features
 --------
-
-* TODO
+This API allows the user to send/receive data using a CC2500 tranceiver to/from a local USB device.
 
 Credits
 -------
