@@ -28,9 +28,13 @@ Features
 This API allows the user to send/receive data using a CC2500 tranceiver to/from a local USB device.
 
 Configuration file:
+
 -data rate: 500kbaud
+
 -Mod.: MSK
+
 -RX BW: 812 kHz
+
 -Optimised for sensitivity
 
 Includes a configuration file for mounting a USB on a Raspberry Pi.
