@@ -130,6 +130,17 @@ void writeRFSettings(void)
     TI_CC_SPIWriteReg(TI_CCxxx0_TEST0,    0x0B);  // Various test settings.
 }
 
+//Initializing GPIO pins on Pi for SPI
+int setup_gpio(void)
+{
+    //Set up wiring Pi
+    wiringPiSetup();
+    //setting up the SPI interface
+    wiringPiSPISetup(SPI_CHAN, SPI_SPEED);
+
+    return 0;
+}
+
 // PATABLE (0 dBm output power)
 extern char paTable[] = {0xFB};
 extern char paTableLen = 1;
