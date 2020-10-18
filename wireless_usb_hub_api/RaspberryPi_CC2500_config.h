@@ -40,7 +40,13 @@
 //  IAR Embedded Workbench v3.41
 //------------------------------------------------------------------------------
 
+#include <wiringPi.h>
+#include <wiringPiSPI.h>
 
+#define SPI_CHAN 0// pin 19
+#define SPI_SPEED 256000 // SPI Clock Spped
+
+int setup_gpio(void);
 void writeRFSettings(void);
 void RFSendPacket(char *, char);
 char RFReceivePacket(char *, char *);
