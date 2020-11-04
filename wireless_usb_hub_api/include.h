@@ -1,54 +1,32 @@
-/* --COPYRIGHT--,BSD
- * Copyright (c) 2011, Texas Instruments Incorporated
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * *  Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *
- * *  Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * *  Neither the name of Texas Instruments Incorporated nor the names of
- *    its contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
- * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * --/COPYRIGHT--*/
-//******************************************************************************
-//  Description:  Master include file
-//
-//  Demo Application for MSP430/CC1100-2500 Interface Code Library v1.1
-//
-// W. Goh
-// Texas Instruments, Inc
-// December 2009
-// Built with IAR Embedded Workbench Version: 4.20
-//******************************************************************************
-// Change Log:
-//******************************************************************************
-// Version:  1.1
-// Comments: Added support for various MSP430 development tools
-// Version:  1.00
-// Comments: Initial Release Version
-//******************************************************************************
+//libraries to inlcude
+#include <stdint.h>
+#include <stdio.h>
+#include <wiringPi.h>
+#include <wiringPiSPI.h>
+#include "CC1100-CC2500.h"
 
-#include "RaspberryPi_TI_CC_CC2500_config.h"
-#include "TI_CC_spi.h"
-#include "RaspberryPi_CC2500_config.h"
+//FIFO commands
+#define TXFIFO_BURST        0x7F    //write burst only
+#define TXFIFO_SINGLE_BYTE  0x3F    //write single only
+#define RXFIFO_BURST        0xFF    //read burst only
+#define RXFIFO_SINGLE_BYTE  0xBF    //read single only
+#define PATABLE_BURST       0x7E    //power control read/write
+#define PATABLE_SINGLE_BYTE 0xFE    //power control read/write
 
+//Raspberry Pi pins and settings
+#define SPI_CHAN 0 //this is the MOSI for SPI, pin 19
+#define SPI_SPEED 8000000 // SPI Clock Speed, should be 4Mhz clock speed
+#define SS_PIN 10 // this is the CS pin, however it needs to be manually altered for desired effects, pin 22
+#define GDO2 4 //pin 16
 
+//initializing methods
+int setup_gpio(void);
+void write_to_register(uint8_t address, uint8_t value);
+void burst_write(uint8_t address, uint8_t *data_array, uint8_t length);
+uint8_t read_from_register(uint8_t address);
+void burst_read(uint8_t address, uint8_t *data_array, uint8_t length);
+void command_strobe(uint8_t address);
+void initializeCC2500();
+void flush_RX_FIFO();
+void receive_data();
+void transmit_data(uint8_t *data_array);
