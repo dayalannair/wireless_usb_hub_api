@@ -13,7 +13,7 @@ Test with:
 * Quasar QFM-TRX1-24G
 * Nooelec SDR USB Dongle
 
-![](file:///C:\Users\client\Desktop\ECE%20Design\Final%20Report\Set-up.jpeg)
+![](Set-up.jpeg)
 
 # Setup
 
