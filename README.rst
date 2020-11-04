@@ -44,22 +44,23 @@ Makes use of the spidev library for SPI communication.
 PIN connections for Raspberry Pi and Quasar module:
 
 PI  | Quasar
+---------------
 
-13  | 7 GDO0  
+13  ---> 7 GDO0  
 
-15  | 5 GDO1
+15  ---> 5 GDO1
 
-17  | 1 VCC 
+17  ---> 1 VCC 
 
-19  | 2 SI
+19  ---> 2 SI
 
-21  | 4 SO 
+21  ---> 4 SO 
 
-23  | 3 SCLK
+23  ---> 3 SCLK
 
-25  | 6 GND
+25  ---> 6 GND
 
-24  | 8 CSn
+24  ---> 8 CSn
 
 
 Credits
