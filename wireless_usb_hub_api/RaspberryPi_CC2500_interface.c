@@ -1,82 +1,80 @@
 #include "include.h"
-#include <stdio.h>    
 
-extern char paTable[]; //used to select PA power control settings
-extern char paTableLen;
 
-//define buffers for sending and receiving
-char txBuffer[4];
-char rxBuffer[4];
-unsigned int i = 0;
+int main()
+{
+    setup_gpio();
+    initializeCC2500();
 
-void main (void){
-    WDTCTL = WDTPW + WDTHOLD;                 // Stop WDT (Watch Dog Timer)
-    TI_CC_SPISetup();                         // Initialize SPI port
-    TI_CC_PowerupResetCCxxxx();               // Reset CCxxxx
-    writeRFSettings();                        // Write RF settings to config reg using CC100-CC2500.c file
-    TI_CC_SPIWriteBurstReg(TI_CCxxx0_PATABLE, paTable, paTableLen);//Write PATABLE
-    portConfig(); // Configure ports -- GDO0 to RX packet info from CCxxxx 
-    interface();
+    //This is to show proof of concept by outputting the numbers 0-7 at a set frequency of 900 Mhz
+    uint8_t data[8] = {0, 1, 2, 3, 4, 5, 6, 7};
+
+    while(1)
+    {
+        transmit_data(data);
+        delay(1000);
+    }
 }
 
+//The following functions deal with the Recevier of the CC2500:
 
-void portConfig(){//configure ports for Raspberry Pi (REPLACE WITH GPIO)
-
-//----------------------------set up using WiringPi----------------------------------------
-    // TI_CC_GDO0_PxIES |= TI_CC_GDO0_PIN;       // Int on falling edge (end of pkt)
-    // TI_CC_GDO0_PxIFG &= ~TI_CC_GDO0_PIN;      // Clear flag
-    // TI_CC_GDO0_PxIE |= TI_CC_GDO0_PIN;        // Enable int on end of packet
-//-----------------------------------------------------------------------------------------
-
-    TI_CC_SPIStrobe(TI_CCxxx0_SRX);           // Initialize CCxxxx in RX mode. When a pkt is received, it will signal on GDO0 and wake CPU
-    __bis_SR_register(LPM3_bits + GIE);       // Enter LPM3, enable interrupts
-
-
-} 
-
-
-void send(char[] data){
-    //int size = sizeOf(data)       //returns the number of bytes in the array
-    txBuffer[0] = 2;                          // Packet length
-    txBuffer[1] = 0x01;                       // Packet address
-    txBuffer[2] = data;                       //data to be sent (string)
-    RFSendPacket(txBuffer, 3);      //expects a transmit buffer a size value in char form
-}
-//receive function that returns a string 
-char[] receive(){
-    char *temp; //holds the transmission's CRC value
-    char len = 2 //length of pckt(data and Addr) size byte stripped away in RX function
-    temp = RFReceivePacket(rxBuffer,len); //stores data in rxBuffer
-    if (temp == 0x80){
-        return rxBuffer[1]; //note the address
-    }
-    else
-        error(1);   //Cyclic Redundancy Check failed
+//Clears the RX FIFO memory location which contains the received RF data
+void flush_RX_FIFO()
+{
+    delay(10);
+    command_strobe(TI_CCxxx0_SIDLE);
+    delay(10);
+    command_strobe(TI_CCxxx0_SFRX);
+    delay(10);
 }
 
-//method for displaying errors 
-void error(int e){
-    if (e == 1){ //Cyclic Redundancy Check failed
-        printf("Transmission error")
+//Turns the CC2500 into a RF receiver
+void receive_data()
+{
+    int packet_length;
+    int state;
+    int count = 0;
+
+    command_strobe(TI_CCxxx0_SRX);
+
+    do
+    {
+        state = digitalRead(GDO2);
+        delay(1);
+        count ++;
+
+    } 
+    while (!state);
+
+    while(state)
+    {
+        state = digitalRead(GDO2);
+        delay(100);
     }
+
+    packet_length = read_from_register(TI_CCxxx0_RXFIFO);
+
+    printf("Packet length: %d", packet_length);
+
+    for (int i = 0; i < packet_length - 1; i++)
+    {
+        printf(", byte: %d: 0x%02X", i, read_from_register(TI_CCxxx0_RXFIFO));
+    }
+
+    printf("\r\n");
+
+    command_strobe(TI_CCxxx0_SIDLE);
+    command_strobe(TI_CCxxx0_SFRX);
 
 }
-//user interface
-void interface(){
-    int size = 0;
-    char str[20];                           //string used for either sending or receiving data
-    char send_receive = '';
-    printf("Type S to send or R to receive data \n");
-    scanf('%c',&send_receive);
-    //process for sending data
-    if (send_receive == 'R'){
-        str = receive(); 
 
-    }
-    else if (send_receive == 'S'){
-        printf("Enter data to be sent \n");
-        scanf("%[^\n]%*c", str);
-        RFSendPacket(str);
-    }
+//The following function deals with the Transceiver of the CC2500:
 
+//Turns the CC2500 into a RF transmitter
+void transmit_data(uint8_t *data_array)
+{
+    command_strobe(TI_CCxxx0_SIDLE);
+    command_strobe(TI_CCxxx0_SFTX);
+    burst_write(TXFIFO_BURST, data_array, sizeof(data_array));
+    command_strobe(TI_CCxxx0_STX);
 }
