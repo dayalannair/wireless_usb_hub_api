@@ -45,3 +45,7 @@ sudo apt install git cmake wiringpi
 ```
 ./poc
 ```
+
+# Future Contributions
+* Adding networking protocols
+* Making Access Point functionality
